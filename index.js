@@ -183,7 +183,8 @@ class PgQuery {
             k++;
         }
         let sql = "insert into " + table  + " (" + columns.join(', ') + ') values (' + values.join(', ') + ')';
-        sql += ' on conflict (' + onDuplicateKey + ') do update set ' + updates.join(', ');
+        sql += ' on conflict (' + onDuplicateKey + ') do ';
+        sql += updates === { } ? 'nothing' : 'update set ' + updates.join(', ');
         return this.execute(sql, params);
     }
     remove (table, cond) {
