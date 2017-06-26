@@ -1,0 +1,23 @@
+{
+  "name": "dv-pg-query",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/druidvav/node-pg-query.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/druidvav/node-pg-query/issues"
+  },
+  "homepage": "https://github.com/druidvav/node-pg-query",
+  "dependencies": {
+    "pg": "^6.1.2",
+    "dv-async-promise": "^1.0.0"
+  }
+}
