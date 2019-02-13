@@ -1,6 +1,6 @@
 {
   "name": "dv-pg-query",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/druidvav/node-pg-query",
   "dependencies": {
-    "pg": "^6.1.2",
-    "dv-async-promise": "^1.0.0"
-  }
+    "pg": "^6.4.2"
+  },
+  "engines" : { "node" : ">=8.0" }
 }

@@ -1,6 +1,5 @@
 "use strict";
 let pg = require('pg');
-let asyncP = require('dv-async-promise');
 
 class PgQueryClient {
     constructor (client, done) {
@@ -69,7 +68,7 @@ class PgQuery {
     _internalQueryIterator (sql, params, iterator) {
         return this.getClient().then((client) => {
             return new Promise((resolve, reject) => {
-                let query = client.pg.query(sql, params);
+                let query = client.pg.query(new pg.Query(sql, params));
                 query.on('row', (row) => { iterator(row); });
                 query.on('end', (result) => { client.done(); resolve(result); });
                 query.on('error', (err) => {
@@ -90,18 +89,22 @@ class PgQuery {
             client.pg.query('LISTEN ' + eventName);
         }));
     }
-    transaction (sequence) {
+    async transaction (sequence) {
         let transaction = new PgQuery({ dsn: this.dsn });
-        return this.getClient().then((client) => transaction.setFixedClient(client))
-            .then(() => transaction.execute('BEGIN'))
-            .then(() => asyncP.waterfall(sequence, (func) => func.call(this, transaction)))
-            .then(() => transaction.execute('COMMIT'))
-            .then(() => transaction.fixedClient.done())
-            .catch((error) =>
-                transaction.execute('ROLLBACK')
-                    .then(() => transaction.fixedClient.done())
-                    .then(() => Promise.reject(error))
-            );
+        let client = await this.getClient();
+        await transaction.setFixedClient(client);
+        await transaction.execute('BEGIN');
+        try {
+            for (let func of sequence) {
+                await func.call(this, transaction);
+            }
+            await transaction.execute('COMMIT');
+            await transaction.fixedClient.done();
+        } catch (error) {
+            await transaction.execute('ROLLBACK');
+            await transaction.fixedClient.done();
+            throw error;
+        }
     }
     fetchOne (sql, params) {
         return this._internalQuery(sql, params, false);
@@ -184,7 +187,7 @@ class PgQuery {
         }
         let sql = "insert into " + table  + " (" + columns.join(', ') + ') values (' + values.join(', ') + ')';
         sql += ' on conflict (' + onDuplicateKey + ') do ';
-        sql += updates === { } ? 'nothing' : 'update set ' + updates.join(', ');
+        sql += !updates.length ? 'nothing' : 'update set ' + updates.join(', ');
         return this.execute(sql, params);
     }
     remove (table, cond) {
